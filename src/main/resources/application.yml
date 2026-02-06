@@ -1,8 +1,20 @@
 server:
   port: 8080
 
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/projet_indiv
+    username: projet
+    password: projet
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    enabled: true
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics

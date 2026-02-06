@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: projet-indiv
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: backend }
+  template:
+    metadata:
+      labels: { app: backend }
+    spec:
+      containers:
+        - name: backend
+          image: projet-indiv-backend:0.0.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: jdbc:postgresql://postgres-svc:5432/projet_indiv
+            - name: DB_USER
+              value: projet
+            - name: DB_PASSWORD
+              value: projet
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: projet-indiv
+spec:
+  selector: { app: backend }
+  ports:
+    - port: 80
+      targetPort: 8080

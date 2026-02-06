@@ -9,10 +9,7 @@ public class OrderSummaryDto {
   private int totalCents;
 
   public OrderSummaryDto(Long id, OffsetDateTime createdAt, String status, int totalCents) {
-    this.id = id;
-    this.createdAt = createdAt;
-    this.status = status;
-    this.totalCents = totalCents;
+    this.id = id; this.createdAt = createdAt; this.status = status; this.totalCents = totalCents;
   }
 
   public Long getId() { return id; }

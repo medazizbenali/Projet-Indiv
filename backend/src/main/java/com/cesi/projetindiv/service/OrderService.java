@@ -10,7 +10,6 @@ import java.util.List;
 
 @Service
 public class OrderService {
-
   private final ProductRepository productRepository;
   private final OrderRepository orderRepository;
 
@@ -30,7 +29,7 @@ public class OrderService {
       }
 
       Product product = productRepository.findById(item.getProductId())
-          .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
+        .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
 
       if (product.getStock() < item.getQuantity()) {
         throw new IllegalStateException("Insufficient stock for product " + product.getId());
@@ -45,30 +44,13 @@ public class OrderService {
 
     order.setTotalCents(total);
     Order saved = orderRepository.save(order);
-
     return new CreateOrderResponse(saved.getId(), saved.getStatus(), saved.getTotalCents());
   }
 
   @Transactional(readOnly = true)
   public List<OrderSummaryDto> getMyOrders(String userId) {
     return orderRepository.findByUserIdOrderByIdDesc(userId).stream()
-        .map(o -> new OrderSummaryDto(o.getId(), o.getCreatedAt(), o.getStatus(), o.getTotalCents()))
-        .toList();
-  }
-
-  @Transactional(readOnly = true)
-  public OrderDetailDto getMyOrder(String userId, Long orderId) {
-    Order order = orderRepository.findById(orderId)
-        .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
-    if (!order.getUserId().equals(userId)) {
-      throw new SecurityException("Forbidden");
-    }
-
-    var lines = order.getLines().stream()
-        .map(l -> new OrderLineDto(l.getProduct().getId(), l.getProduct().getName(), l.getQuantity(), l.getUnitPriceCents()))
-        .toList();
-
-    return new OrderDetailDto(order.getId(), order.getCreatedAt(), order.getStatus(), order.getTotalCents(), lines);
+      .map(o -> new OrderSummaryDto(o.getId(), o.getCreatedAt(), o.getStatus(), o.getTotalCents()))
+      .toList();
   }
 }

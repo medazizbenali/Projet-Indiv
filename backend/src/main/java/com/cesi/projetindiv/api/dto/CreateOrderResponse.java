@@ -6,9 +6,7 @@ public class CreateOrderResponse {
   private int totalCents;
 
   public CreateOrderResponse(Long orderId, String status, int totalCents) {
-    this.orderId = orderId;
-    this.status = status;
-    this.totalCents = totalCents;
+    this.orderId = orderId; this.status = status; this.totalCents = totalCents;
   }
 
   public Long getOrderId() { return orderId; }

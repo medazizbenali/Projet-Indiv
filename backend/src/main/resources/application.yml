@@ -18,10 +18,3 @@ management:
     web:
       exposure:
         include: health,info,metrics,prometheus
-
-app:
-  security:
-    users:
-      - username: aziz
-        password: aziz123
-        role: USER

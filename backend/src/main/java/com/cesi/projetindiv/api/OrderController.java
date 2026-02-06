@@ -11,27 +11,16 @@ import java.util.List;
 
 @RestController
 public class OrderController {
-
   private final OrderService orderService;
-
-  public OrderController(OrderService orderService) {
-    this.orderService = orderService;
-  }
+  public OrderController(OrderService orderService) { this.orderService = orderService; }
 
   @PostMapping("/api/orders")
-  public ResponseEntity<CreateOrderResponse> create(@Valid @RequestBody CreateOrderRequest request,
-                                                    Authentication auth) {
-    String userId = auth.getName();
-    return ResponseEntity.ok(orderService.createOrder(userId, request));
+  public ResponseEntity<CreateOrderResponse> create(@Valid @RequestBody CreateOrderRequest request, Authentication auth) {
+    return ResponseEntity.ok(orderService.createOrder(auth.getName(), request));
   }
 
   @GetMapping("/api/me/orders")
   public List<OrderSummaryDto> myOrders(Authentication auth) {
     return orderService.getMyOrders(auth.getName());
-  }
-
-  @GetMapping("/api/me/orders/{id}")
-  public OrderDetailDto myOrder(@PathVariable Long id, Authentication auth) {
-    return orderService.getMyOrder(auth.getName(), id);
   }
 }

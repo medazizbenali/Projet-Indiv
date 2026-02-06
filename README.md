@@ -1,36 +1,53 @@
-# Projet Indiv (Full stack)
+# Projet Indiv — Full Stack (Docker + CI + CD Minikube)
 
 Monorepo:
-- `backend/` : Spring Boot (Flyway, JPA, Security Basic, Swagger)
-- `frontend/` : React (Vite)
+- `backend/` Spring Boot (Flyway, JPA, Basic Auth, Swagger)
+- `frontend/` React (Vite)
+- `docker-compose.yml` 3 services (db, backend, frontend)
+- `.github/workflows/ci.yml` CI GitHub Actions (tests + build)
+- `k8s/` manifests Minikube (CD démontrée en local)
 
-## Lancer (local)
-### Backend
-1) Démarrer PostgreSQL local (ou via Docker) et créer `projet_indiv` (user/pass: projet/projet)
-2) Dans `backend/`:
+## 1) Run en Docker
+Pré-requis: Docker Desktop
+
 ```bash
-mvn clean test
-mvn spring-boot:run
+docker compose up --build
 ```
-Swagger: `http://localhost:8080/swagger-ui/index.html`
 
-### Frontend
-Dans `frontend/`:
+URLs:
+- Front: http://localhost:3000
+- API: http://localhost:8080
+- Swagger: http://localhost:8080/swagger-ui/index.html
+- Health: http://localhost:8080/actuator/health
+
+Auth Basic (pour créer commande / historique):
+- user: aziz
+- pass: aziz123
+
+Arrêt:
 ```bash
-npm install
-npm run dev
+docker compose down
 ```
-Front: `http://localhost:5173`
 
-## Identifiants (Basic Auth)
-- user: `aziz`
-- pass: `aziz123`
+## 2) CI (GitHub Actions)
+Déclenché sur push/PR. Exécute:
+- `mvn test` (backend)
+- `npm ci && npm run build` (frontend)
 
-## Endpoints
-- `GET /api/products` (public)
-- `POST /api/orders` (auth)
-- `GET /api/me/orders` (auth)
-- `GET /api/me/orders/{id}` (auth)
+## 3) CD démontrée via Minikube (local)
 
-## Notes
-- Le `pom.xml` est nettoyé: version plugin Spring Boot, encodage UTF-8, Java 17 fixé (suppression warnings).
+```bash
+minikube start
+eval "$(minikube docker-env)"
+
+docker build -t projet-indiv-backend:0.0.1 ./backend
+docker build -t projet-indiv-frontend:0.0.1 ./frontend
+
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/postgres.yaml
+kubectl apply -f k8s/backend.yaml
+kubectl apply -f k8s/frontend.yaml
+
+kubectl -n projet-indiv port-forward svc/frontend-svc 3000:80
+kubectl -n projet-indiv port-forward svc/backend-svc 8080:80
+```

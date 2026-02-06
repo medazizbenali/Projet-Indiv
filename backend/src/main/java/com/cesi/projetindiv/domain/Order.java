@@ -8,9 +8,7 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 public class Order {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "user_id", nullable = false)
@@ -30,15 +28,9 @@ public class Order {
 
   protected Order() {}
 
-  public Order(String userId, String status) {
-    this.userId = userId;
-    this.status = status;
-  }
+  public Order(String userId, String status) { this.userId = userId; this.status = status; }
 
-  public void addLine(OrderLine line) {
-    lines.add(line);
-    line.setOrder(this);
-  }
+  public void addLine(OrderLine line) { lines.add(line); line.setOrder(this); }
 
   public Long getId() { return id; }
   public String getUserId() { return userId; }
@@ -48,5 +40,4 @@ public class Order {
   public List<OrderLine> getLines() { return lines; }
 
   public void setTotalCents(int totalCents) { this.totalCents = totalCents; }
-  public void setStatus(String status) { this.status = status; }
 }

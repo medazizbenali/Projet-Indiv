@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 public class CreateOrderRequest {
-
-  @NotEmpty
-  @Valid
+  @NotEmpty @Valid
   private List<OrderItemRequest> items;
 
   public List<OrderItemRequest> getItems() { return items; }
@@ -19,7 +17,6 @@ public class CreateOrderRequest {
 
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
-
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
   }

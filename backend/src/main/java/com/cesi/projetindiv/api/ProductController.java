@@ -9,20 +9,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-
   private final ProductRepository productRepository;
-
-  public ProductController(ProductRepository productRepository) {
-    this.productRepository = productRepository;
-  }
+  public ProductController(ProductRepository productRepository) { this.productRepository = productRepository; }
 
   @GetMapping
-  public List<Product> list() {
-    return productRepository.findAll();
-  }
-
-  @GetMapping("/{id}")
-  public Product detail(@PathVariable Long id) {
-    return productRepository.findById(id).orElseThrow();
-  }
+  public List<Product> list() { return productRepository.findAll(); }
 }

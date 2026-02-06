@@ -19,7 +19,6 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-# Demo users (Basic Auth)
 app:
   security:
     users:

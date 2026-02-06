@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16:///projet_indiv
+    username: projet
+    password: projet
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate

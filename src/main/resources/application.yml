@@ -26,3 +26,6 @@ app:
       - username: aziz
         password: aziz123
         role: USER
+- username: admin
+        password: admin
+        role: ADMIN

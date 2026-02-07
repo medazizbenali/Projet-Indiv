@@ -23,6 +23,8 @@ spec:
               value: projet
             - name: DB_PASSWORD
               value: projet
+            - name: APP_JWT_SECRET_BASE64
+              value: VGhpcy1pcy1hLWRldi1zZWNyZXQtY2hhbmdlLW1lLXBsZWFzZS0xMjM0NTY=
 ---
 apiVersion: v1
 kind: Service
@@ -30,6 +32,7 @@ metadata:
   name: backend-svc
   namespace: projet-indiv
 spec:
+  type: NodePort
   selector: { app: backend }
   ports:
     - port: 80

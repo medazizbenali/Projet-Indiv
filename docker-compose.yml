@@ -20,6 +20,8 @@ services:
       DB_URL: jdbc:postgresql://db:5432/projet_indiv
       DB_USER: projet
       DB_PASSWORD: projet
+      # Dev secret (base64). Change for real deployment.
+      APP_JWT_SECRET_BASE64: VGhpcy1pcy1hLWRldi1zZWNyZXQtY2hhbmdlLW1lLXBsZWFzZS0xMjM0NTY=
     ports:
       - "8080:8080"
     depends_on:
@@ -33,3 +35,6 @@ services:
       - "3000:80"
     depends_on:
       - backend
+    environment:
+      BACKEND_HOST: backend
+      BACKEND_PORT: 8080

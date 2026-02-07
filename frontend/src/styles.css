@@ -1,0 +1,139 @@
+:root{
+  --bg:#0b1020;
+  --card:#121a33;
+  --muted:#93a4c7;
+  --text:#e8eefc;
+  --accent:#4f8cff;
+  --accent2:#22c55e;
+  --danger:#ef4444;
+  --border:rgba(255,255,255,.08);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(79,140,255,.35), transparent),
+              radial-gradient(900px 500px at 80% 0%, rgba(34,197,94,.18), transparent),
+              var(--bg);
+  color: var(--text);
+}
+
+a{color:inherit; text-decoration:none}
+
+.container{max-width:1100px; margin:0 auto; padding:20px}
+
+.nav{
+  position:sticky; top:0; z-index:10;
+  backdrop-filter: blur(8px);
+  background: rgba(11,16,32,.65);
+  border-bottom: 1px solid var(--border);
+}
+.navInner{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 20px; max-width:1100px; margin:0 auto}
+.brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+.badge{font-size:12px; opacity:.85; border:1px solid var(--border); padding:2px 8px; border-radius:999px}
+.navLinks{display:flex; gap:12px; align-items:center}
+
+.btn{
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:.15s transform, .15s background;
+}
+.btn:hover{background: rgba(255,255,255,.1)}
+.btn:active{transform: translateY(1px)}
+.btnPrimary{background: linear-gradient(135deg, rgba(79,140,255,.95), rgba(79,140,255,.65)); border-color: rgba(79,140,255,.35)}
+.btnSuccess{background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(34,197,94,.6)); border-color: rgba(34,197,94,.35)}
+.btnDanger{background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.35)}
+
+.hero{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap:16px;
+  align-items:stretch;
+  margin: 18px 0 16px;
+}
+.card{
+  background: rgba(18,26,51,.72);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.25);
+}
+.muted{color:var(--muted)}
+.h1{font-size:34px; margin:0 0 10px}
+.h2{font-size:18px; margin:0 0 8px}
+
+.grid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap:12px;
+}
+.product{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.prodTop{display:flex; justify-content:space-between; gap:10px}
+.price{font-weight:800}
+.pill{font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted)}
+.prodActions{display:flex; justify-content:space-between; align-items:center; gap:10px}
+.qty{display:flex; align-items:center; gap:8px}
+.qty span{min-width:24px; text-align:center}
+
+.input{width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,.06); color: var(--text)}
+.row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+
+.toast{margin-top:10px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,.06)}
+.toastErr{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12)}
+
+.footer{opacity:.7; margin-top:24px; font-size:12px}
+
+/* ---- Compatibility layer for current components ---- */
+.topnav{position:sticky; top:0; z-index:10; backdrop-filter: blur(8px); background: rgba(11,16,32,.65); border-bottom: 1px solid var(--border)}
+.navrow{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 0}
+.navlinks{display:flex; gap:12px; align-items:center}
+.navlink{opacity:.9; color:var(--muted)}
+.navlink:hover{color:var(--text)}
+.navauth{display:flex; gap:10px; align-items:center}
+
+.btn-primary{background: linear-gradient(135deg, rgba(79,140,255,.95), rgba(79,140,255,.65)); border-color: rgba(79,140,255,.35)}
+.btn-primary:hover{background: linear-gradient(135deg, rgba(79,140,255,1), rgba(79,140,255,.7))}
+
+.hero h1{font-size:34px; margin:6px 0 10px}
+.kicker{display:inline-flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); border:1px solid var(--border); padding:6px 10px; border-radius:999px}
+.searchrow{display:flex; gap:10px; margin-top:12px}
+
+.section{margin-top:20px}
+.sectionhead{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:10px}
+
+.producttop{display:flex; justify-content:space-between; gap:10px}
+.productname{font-weight:700}
+.qtyrow{display:flex; align-items:center; justify-content:center; gap:8px}
+.qty{min-width:34px; text-align:center; font-weight:700}
+
+.toast-danger{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12)}
+
+.authwrap{display:flex; justify-content:center; padding:26px 0}
+.authcard{max-width:420px; width:100%}
+.form{display:flex; flex-direction:column; gap:10px; margin-top:10px}
+.label{font-size:13px; color:var(--muted)}
+
+.stack{display:flex; flex-direction:column; gap:12px}
+.orderrow{display:flex; justify-content:space-between; gap:12px; align-items:flex-start}
+.orderid{font-weight:800}
+.pill-green{color:#a7f3d0; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12)}
+.cartline{display:flex; justify-content:space-between; gap:10px; margin-top:8px}
+.cardtitle{font-weight:800; margin-bottom:6px}
+
+@media (max-width: 980px){
+  .hero{grid-template-columns: 1fr}
+  .grid{grid-template-columns: repeat(2, minmax(0, 1fr))}
+}
+@media (max-width: 520px){
+  .grid{grid-template-columns: 1fr}
+  .row{grid-template-columns: 1fr}
+}

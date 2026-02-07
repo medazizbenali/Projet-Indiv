@@ -13,6 +13,12 @@ spring:
   flyway:
     enabled: true
 
+app:
+  jwt:
+    # IMPORTANT: change in production; keep base64 (>= 32 bytes) for HS256.
+    secret-base64: ${APP_JWT_SECRET_BASE64:VGhpcy1pcy1hLWRldi1zZWNyZXQtY2hhbmdlLW1lLXBsZWFzZS0xMjM0NTY=}
+    expiration-seconds: ${APP_JWT_EXP_SECONDS:3600}
+
 management:
   endpoints:
     web:

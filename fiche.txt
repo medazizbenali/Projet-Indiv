@@ -1,0 +1,581 @@
+Ce qu’on a construit (vue d’ensemble)
+🎯 Objectif du projet CESI
+
+Mettre en place une application logicielle complète, avec :
+
+développement
+
+qualité
+
+sécurité
+
+CI/CD
+
+déploiement
+
+orchestration
+
+👉 Pas juste du code, mais un système industriel.
+
+🧱 Architecture finale
+[ Frontend React ]
+        |
+        v
+[ Backend Spring Boot ]
+        |
+        v
+[ PostgreSQL ]
+
+
+Le tout :
+
+packagé avec Docker
+
+déployable en local (Docker Compose)
+
+déployé sur Kubernetes (Minikube)
+
+testé en CI (GitHub Actions)
+
+2️⃣ Tout ce qu’on a installé (et pourquoi)
+🖥️ Outils système
+✔ Java 17 (Eclipse Adoptium)
+
+pour exécuter Spring Boot
+
+Java = langage backend
+
+👉 Pourquoi Java 17 ?
+Version LTS, stable, recommandée en entreprise.
+
+✔ Maven
+
+outil de build Java
+
+télécharge les dépendances
+
+compile
+
+lance les tests
+
+génère le JAR
+
+👉 Sans Maven, impossible de faire du Spring Boot proprement.
+
+✔ Node.js + npm
+
+nécessaire pour React
+
+build du frontend
+
+👉 React = frontend moderne demandé implicitement.
+
+✔ Docker Desktop
+
+moteur de containers
+
+permet :
+
+Docker Compose
+
+Docker build
+
+Minikube (driver docker)
+
+👉 Docker = fondation du projet.
+
+✔ Minikube
+
+Kubernetes local
+
+démonstration de CD
+
+orchestration réelle
+
+👉 Pas du cloud, mais même logique que production.
+
+3️⃣ Ce qu’on a développé (code)
+🧩 Backend – Spring Boot
+
+API REST
+
+JPA (ORM) pour la DB
+
+Flyway pour les migrations
+
+Spring Security (auth basique)
+
+Pourquoi JPA ?
+
+mappe les classes Java ↔ tables SQL
+
+évite le SQL manuel
+
+standard entreprise
+
+Pourquoi Flyway ?
+
+versionner la base de données
+
+rejouer les migrations automatiquement
+
+cohérence entre environnements
+
+Pourquoi Spring Security ?
+
+sécurité = exigence CESI
+
+protection des endpoints
+
+auth basique suffisante pour démo
+
+🖥️ Frontend – React
+
+interface utilisateur
+
+appels API vers backend
+
+servi via Nginx en prod (container)
+
+👉 React buildé → fichiers statiques → Nginx → navigateur
+
+4️⃣ Docker : ce qu’on a VRAIMENT fait
+🐳 Docker = packaging
+
+Docker transforme :
+
+backend → image
+
+frontend → image
+
+DB → image
+
+👉 Une image = application + runtime + dépendances
+
+Pourquoi Docker ?
+
+même comportement partout
+
+plus de “ça marche chez moi”
+
+base de la CI/CD
+
+🧩 Docker Compose
+frontend
+backend
+postgres
+
+
+👉 Sert à :
+
+lancer tout en local
+
+tester rapidement
+
+debug
+
+📌 Docker Compose = CD locale simplifiée
+
+5️⃣ CI : GitHub Actions
+Ce que fait la CI
+
+À chaque push :
+
+backend :
+
+build Maven
+
+tests
+
+frontend :
+
+npm install
+
+build React
+
+👉 Si ça passe :
+
+le code est sain
+
+prêt à être packagé
+
+📌 CI = vérifier, PAS déployer
+
+6️⃣ Le GROS piège qu’on a eu (et pourquoi c’est un point fort)
+❌ Problème : backend qui ne démarre pas
+
+Erreur :
+
+no main manifest attribute
+
+Pourquoi ?
+
+Maven générait un JAR
+
+MAIS pas un JAR exécutable
+
+Docker faisait java -jar
+
+Java ne trouvait pas le point d’entrée
+
+✅ Solution
+
+Configurer correctement :
+
+spring-boot-maven-plugin
+→ repackage
+
+
+👉 Résultat :
+
+JAR Spring Boot exécutable
+
+Docker OK
+
+backend démarre
+
+📌 Point très fort à l’oral : incident réel + résolution.
+
+7️⃣ Kubernetes (Minikube) : la CD
+Pourquoi Kubernetes ?
+
+standard entreprise
+
+orchestration
+
+gestion réseau
+
+redémarrage automatique
+
+👉 CESI demande une logique d’hébergement, pas juste du local.
+
+Namespace
+projet-indiv
+
+
+👉 Sert à :
+
+isoler l’application
+
+éviter les conflits
+
+structuration pro
+
+Services
+
+backend-svc
+
+frontend-svc
+
+postgres-svc
+
+👉 Kubernetes ne parle PAS aux pods directement, mais aux services.
+
+Problème réseau frontend → backend
+
+Erreur :
+
+host not found in upstream "backend"
+
+Pourquoi ?
+
+Nginx pointait vers backend
+
+En Kubernetes, le nom DNS = nom du service
+
+Solution
+proxy_pass http://backend-svc:80;
+
+
+📌 Là tu as compris :
+
+DNS Kubernetes
+
+service discovery
+
+8️⃣ Images & ErrImagePull
+Problème
+ErrImagePull
+
+Pourquoi ?
+
+Kubernetes cherchait une image inexistante
+
+projet-indiv:0.0.1 ≠ images réellement buildées
+
+Solution
+
+supprimer le deploy inutile (api)
+
+utiliser les bonnes images
+
+imagePullPolicy: IfNotPresent
+
+9️⃣ Sécurité API (auth demandée)
+Pourquoi l’API demandait un login ?
+
+Spring Security activé
+
+endpoints protégés
+
+Solution
+
+Ajouter :
+
+app.security.users:
+  - admin / admin
+
+
+👉 Sécurité simple, claire, démontrable.
+
+🔁 Résumé des PROBLÈMES & SOLUTIONS (table mentale)
+Problème	Cause	Solution
+mvn not found	Java/Maven non installés	Installation + PATH
+Docker ne démarre pas	mauvais engine	Docker Desktop Linux
+backend crash	JAR non exécutable	repackage
+frontend crash	mauvais DNS	backend-svc
+ErrImagePull	image inexistante	nettoyer deploy
+namespace not found	non créé	create namespace
+API protégée	security active	admin/admin
+🎤 Ce que tu dois retenir pour l’oral
+
+Tu n’as PAS “juste suivi” :
+
+tu as mis en place une chaîne complète
+
+tu as résolu de vrais incidents
+
+tu comprends maintenant chaque couche
+
+👉 Tu peux défendre :
+
+CI
+
+Docker
+
+Kubernetes
+
+Sécurité
+
+Architecture
+
+Debug
+
+
+Ce qui était déjà couvert (le cœur du projet)
+
+Tout ça, on l’a bien fait et bien expliqué :
+
+Git + GitHub (repo, branches)
+
+Backend Spring Boot (JPA, Flyway, Security)
+
+Frontend React + Nginx
+
+Docker (images, Dockerfile)
+
+Docker Compose (CD locale)
+
+CI GitHub Actions
+
+Kubernetes / Minikube (CD orchestrée)
+
+Namespace Kubernetes
+
+Services, DNS, port-forward
+
+Sécurité API
+
+Debug réel (logs, ErrImagePull, CrashLoop, manifest, etc.)
+
+👉 Ça suffit déjà à valider le bloc, clairement.
+
+🔍 Les points que j’ajoute pour être exhaustif (et rassurant)
+1️⃣ Git & organisation du code (important CESI)
+
+On l’a fait, mais je le formalise :
+
+Branches
+
+main → branche stable
+
+develop → travail courant
+
+👉 Ça montre :
+
+gestion propre du code
+
+logique d’intégration continue
+
+Phrase oral :
+
+Le développement est réalisé sur une branche dédiée afin de sécuriser la branche principale.
+
+2️⃣ GitHub Actions : métriques qualité implicites
+
+On n’a pas “nommé” ça comme tel, mais c’est bien là :
+
+build Maven
+
+tests backend
+
+build frontend
+
+👉 Tu peux rattacher ça à :
+
+qualité
+
+fiabilité
+
+prévention de dette technique
+
+Si on te demande :
+
+Comment tu mesures la qualité ?
+
+Tu réponds :
+
+Via l’automatisation des builds et tests en CI. Un build cassé empêche toute livraison.
+
+3️⃣ JaCoCo (coverage)
+
+Même si on n’a pas encore exploité le rapport :
+
+JaCoCo est configuré
+
+prêt à fournir une métrique de couverture
+
+👉 Tu peux dire :
+
+La couverture de tests est mesurée via JaCoCo, ce qui permet d’évaluer la robustesse du code.
+
+4️⃣ Pourquoi un seul namespace
+
+Tu l’as volontairement choisi, et c’est défendable.
+
+Tu peux dire :
+
+Pour un projet individuel et un périmètre limité, un seul namespace est suffisant et évite une complexité inutile.
+
+👉 Très bon point : simplicité maîtrisée.
+
+5️⃣ eval $(minikube docker-env) (détail important)
+
+On l’a utilisé, mais maintenant tu le comprends :
+
+ça connecte Docker au daemon Minikube
+
+permet à Kubernetes de voir les images locales
+
+Phrase oral :
+
+Les images Docker sont construites directement dans l’environnement Minikube afin d’éviter un registry externe.
+
+6️⃣ port-forward (accès aux services)
+
+Tu l’as fait, et c’est clé :
+
+Kubernetes n’expose rien par défaut
+
+port-forward = accès contrôlé
+
+👉 Montre que tu comprends la sécurité par défaut de Kubernetes.
+
+7️⃣ Kubernetes Dashboard
+
+Tu sais maintenant :
+
+minikube dashboard
+
+
+👉 Super pour montrer :
+
+pods
+
+services
+
+état du cluster
+
+
+Ce que ça change d’avoir une VM Azure (crédit 100$)
+
+Si tu me l’avais dit dès le début :
+
+On aurait pu héberger Jenkins + l’app directement sur la VM dès la phase Docker/CI, au lieu de tout faire “local only”.
+
+On aurait pensé plus tôt à : DNS/HTTPS, ports, firewall, logs, sauvegarde DB, et pipeline CD (push image → pull sur VM).
+
+Changer maintenant est malin, parce que :
+
+Tu as déjà un projet dockerisé + k8s local (Minikube) → on va juste ajouter une cible “VM” (docker compose sur VM), et Jenkins par-dessus.
+
+Le jury verra : CI (GitHub Actions) + CI (Jenkins) + déploiement VM + (plus tard) CD k8s Minikube.
+
+Côté règles/limites Azure for Students : tu as bien un crédit 100$ et des limites de quota possibles.
+Pour rester dans le budget : on choisit une petite VM burstable (série B) et on éteint quand tu ne l’utilises pas.
+
+2) Sécurité demandée (JWT, hash, pas de mot de passe en clair, rate limit…)
+
+Tu as raison : c’est exactement le genre de points qui font “Tech Lead”.
+
+On va mettre :
+
+Inscription + Connexion (démo obligatoire)
+
+Mots de passe hashés BCrypt en base (jamais en clair)
+
+JWT Bearer (API stateless)
+
+Rate limit sur /api/auth/* : 20 requêtes / minute / IP (anti brute-force)
+
+Bonus “pro” : séparation endpoints publics/privés, erreurs propres, et headers de sécu.
+
+3) Front plus “vrai site e-commerce”
+
+Oui : on passe d’un front “minimal” à un front type shop :
+
+Navbar (Catalogue / Mes commandes / Swagger)
+
+Pages : Catalogue, Panier, Connexion, Inscription, Mes commandes (protégée)
+
+Appels API réels, stockage JWT en localStorage, routes protégées
+
+✅ Nouveau ZIP prêt (Back JWT + Front plus beau + Rate limit + CI fix)
+
+Je t’ai préparé une nouvelle version complète du projet avec tout ça intégré :
+
+Download Projet-Indiv-JWT-UI.zip
+
+Ce que contient ce zip
+
+Backend (Spring Boot) :
+
+/api/auth/register + /api/auth/login (JWT)
+
+table app_users (Flyway)
+
+BCrypt
+
+Rate limit Bucket4j (20/min/IP sur auth)
+
+SecurityConfig stateless + filtre JWT
+
+Frontend (React/Vite) :
+
+pages Login/Register/Orders
+
+UI plus “site”
+
+Checkout qui crée une commande (si connecté)
+
+Docker :
+
+docker-compose OK (db + backend + frontend)
+
+Kubernetes Minikube :
+
+manifests mis à jour (env nginx + secret JWT)
+
+GitHub Actions :
+
+fix du job front : plus de package-lock obligatoire (ça réglait ton erreur de cache)

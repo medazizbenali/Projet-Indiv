@@ -32,7 +32,7 @@ pipeline {
     }
 
     stage('Security - Trivy scan') {
-      agent { docker { image 'aquasec/trivy:latest' } }
+      agent { docker { image 'aquasec/trivy:latest' args "--entrypoint=''" } }
       steps {
         sh 'trivy fs --severity HIGH,CRITICAL --exit-code 1 .'
       }

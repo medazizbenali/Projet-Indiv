@@ -1,4 +1,4 @@
-Ce qu’on a construit (vue d’ensemble)
+Ce qu’on a construit 
 🎯 Objectif du projet CESI
 
 Mettre en place une application logicielle complète, avec :
@@ -579,3 +579,768 @@ manifests mis à jour (env nginx + secret JWT)
 GitHub Actions :
 
 fix du job front : plus de package-lock obligatoire (ça réglait ton erreur de cache)
+
+
+
+
+
+====================================
+semaine 2 
+Fiche récapitulatif des modifications
+1) Sécurité applicative (authentification + autorisations)
+
+Objectif : répondre au volet “sécurité minimale” et sécuriser la fonction métier.
+
+Ajout d’une couche JWT pour l’authentification :
+
+backend/src/main/java/com/cesi/projetindiv/security/JwtService.java
+
+Mise en place de la configuration Spring Security :
+
+backend/src/main/java/com/cesi/projetindiv/security/SecurityConfig.java
+
+Création/centralisation de la logique d’authentification :
+
+backend/src/main/java/com/cesi/projetindiv/service/AuthService.java
+
+Sécurisation des routes :
+
+endpoints publics (ex: catalogue produits)
+
+endpoints protégés (ex: commandes + historique utilisateur)
+
+✅ Résultat : authentification robuste et séparation claire public/privé.
+
+2) Base de données (migration / persistance utilisateurs)
+
+Objectif : fiabiliser et industrialiser la création du schéma.
+
+Ajout d’une migration Flyway pour la table utilisateurs :
+
+backend/src/main/resources/db/migration/V3__create_users.sql
+
+✅ Résultat : base versionnée, reproductible (local/CI/VM).
+
+3) Qualité logicielle (tests : 2 types minimum)
+
+Objectif : satisfaire l’exigence “au moins deux types de tests”.
+
+Ajout / correction d’un test unitaire service layer pour la création de commande :
+
+backend/src/test/java/com/cesi/projetindiv/OrderServiceTest.java
+
+Ajusté pour être compatible avec les entités JPA (constructeur protégé / pas de setters).
+
+✅ Résultat : tests d’intégration déjà présents + tests unitaires = conformité grille.
+
+4) CI (GitHub Actions) “verte”
+
+Objectif : garantir build/test automatique à chaque push.
+
+Mise en place/validation du pipeline GitHub Actions :
+
+build + tests backend (Maven)
+
+build frontend (Node)
+
+exécution systématique sur la branche develop
+
+Nettoyage repo et bonnes pratiques Git :
+
+suppression des artefacts (target/, node_modules/ si présents)
+
+.gitignore complet pour éviter de polluer le repo
+
+Résolution de synchronisation Git propre :
+
+git pull --rebase + gestion stash
+
+✅ Résultat : pipeline green et repo propre, prêt pour déploiement.
+
+5) Déploiement local (Docker + Minikube)
+
+Objectif : prouver l’exécutabilité et préparer l’hébergement.
+
+Exécution en local via docker-compose.yml (frontend + backend + postgres)
+
+Déploiement via manifests Kubernetes (k8s/) sur Minikube
+
+Vérifications API (health + endpoints métier)
+
+✅ Résultat : même application déployable sur 2 environnements (compose / k8s).
+
+6) Fonction métier (pour répondre à “1 fonctionnalité métier”)
+
+Objectif : centrer le rendu sur une feature métier réelle.
+
+Fonction métier couverte :
+
+Catalogue produits (public)
+
+Création de commande (auth)
+
+Historique de commandes / “mes commandes” (auth)
+
+✅ Résultat : vous pouvez argumenter que l’auth est un pré-requis sécurité au service de la fonction métier.
+
+
+FICHE RÉCAPITULATIVE — PROJET INDIV
+
+Déploiement, CI, sécurité et hébergement cloud
+
+1. Contexte initial
+
+Projet individuel avec :
+
+Backend Spring Boot
+
+Frontend Node / SPA
+
+Conteneurisation Docker
+
+CI existante via GitHub Actions
+
+Objectif supplémentaire :
+
+Hébergement cloud (Europe)
+
+Deuxième couche de CI avec Jenkins
+
+Respect des consignes : sécurité minimale, CI, tests, observabilité
+
+2. Choix d’architecture
+Hébergement
+
+Azure VM (West Europe)
+
+Taille : Standard B2ms (2 vCPU, 8 Go RAM)
+
+OS : Ubuntu 24.04 LTS
+
+👉 Choix volontairement simple et réaliste, adapté à un projet étudiant / PME
+(au lieu d’un AKS surdimensionné).
+
+Orchestration
+
+Local : Docker Compose + Minikube (preuve Kubernetes)
+
+Cloud : Docker Compose sur VM
+
+Reverse proxy : Nginx
+
+👉 Approche prod-like sans complexité inutile.
+
+3. Mise en place de Jenkins (2ᵉ CI)
+Jenkins déployé :
+
+Via Docker Compose
+
+Persistance via volume jenkins_home
+
+Jenkins accessible en HTTP
+
+4. Problèmes rencontrés & solutions
+🔴 Problème 1 — Jenkins ne pouvait pas cloner le repo GitHub
+
+Erreur :
+
+Permission denied (publickey)
+error in libcrypto
+
+
+Cause :
+
+Jenkins n’arrivait pas à utiliser une clé SSH ED25519
+
+Mauvais format pour le client Git de Jenkins
+
+Solution :
+
+Génération d’une clé SSH RSA 4096 bits (PEM) dédiée à Jenkins
+
+Ajout de la clé publique sur GitHub
+
+Ajout de la clé privée dans Jenkins Credentials
+
+Type : SSH Username with private key
+
+Username : git
+
+✅ Jenkins ↔ GitHub fonctionnel
+
+🔴 Problème 2 — Jenkinsfile refusé (agent docker)
+
+Erreur :
+
+Invalid agent type "docker"
+
+
+Cause :
+
+Plugin Docker Pipeline manquant
+
+Solution :
+
+Installation du plugin Docker Pipeline
+
+🔴 Problème 3 — docker: not found dans Jenkins
+
+Erreur :
+
+docker: not found
+
+
+Cause :
+
+Le conteneur Jenkins n’avait pas le Docker CLI
+
+Le plugin ne suffit pas sans le binaire
+
+Solution :
+
+Rebuild de l’image Jenkins avec :
+
+installation de docker-ce-cli
+
+montage de /var/run/docker.sock
+
+👉 Jenkins peut maintenant lancer des conteneurs Docker.
+
+🔴 Problème 4 — Échec du frontend (npm ci)
+
+Erreur :
+
+npm ci failed
+
+
+Cause :
+
+npm ci nécessite obligatoirement un package-lock.json
+
+Le fichier n’était pas présent / synchronisé
+
+Solution :
+
+Génération du package-lock.json en local
+
+Commit et push dans develop
+
+Rebase pour synchroniser avec le remote
+
+✅ Build frontend OK
+
+🔴 Problème 5 — Rejets Git (non-fast-forward)
+
+Cause :
+
+Commits effectués depuis plusieurs environnements (local + VM)
+
+Branche locale en retard par rapport à origin/develop
+
+Solution :
+
+git stash
+
+git pull --rebase origin develop
+
+git push
+
+5. Sécurité mise en place
+
+Authentification JWT
+
+Sécurisation des accès backend
+
+Scan de vulnérabilités intégré dans la CI (Trivy)
+
+Clés SSH dédiées (séparation des usages)
+
+Hébergement en Europe (conformité consignes)
+
+6. CI finale (Jenkins)
+
+Pipeline Jenkins :
+
+Checkout Git sécurisé (SSH)
+
+Tests backend (Maven dans conteneur)
+
+Build frontend (Node dans conteneur)
+
+Scan de sécurité (Trivy)
+
+👉 CI équivalente à GitHub Actions, indépendante, reproductible.
+
+7. Bonnes pratiques démontrées
+
+Séparation local / cloud
+
+Séparation CI GitHub / CI Jenkins
+
+Gestion propre des secrets
+
+Débogage méthodique (logs → cause → solution)
+
+Architecture évolutive (VM → AKS possible plus tard)
+
+8. Décision clé à justifier à l’oral
+Pourquoi pas AKS ?
+
+AKS non exigé par le sujet
+
+Coût et complexité non justifiés
+
+VM + Docker Compose = choix pragmatique
+
+“L’objectif était de démontrer la maîtrise de la CI/CD et du déploiement sécurisé, pas la gestion d’un cluster managé.”
+
+9. État final
+
+✅ Application fonctionnelle
+
+✅ CI GitHub Actions
+
+✅ CI Jenkins indépendante
+
+✅ Hébergement cloud Europe
+
+✅ Sécurité minimale respectée
+
+✅ Projet défendable à l’oral
+
+
+========================================================================================================
+
+
+semaine 3 
+🔹 RÉCAPITULATIF – JOURNÉE PROJET (INFRA / CLOUD / DEVOPS)
+1️⃣ Objectif de la journée
+
+L’objectif était de :
+
+stabiliser le déploiement cloud du projet
+
+finaliser l’architecture POC cloud-ready
+
+préparer une migration vers le cloud natif
+
+sécuriser l’application (réseau + données + CI)
+
+2️⃣ État initial
+
+Application full Dockerisée (frontend / backend / PostgreSQL)
+
+CI fonctionnelle via GitHub Actions
+
+Déploiement local et sur VM Azure
+
+Jenkins déjà utilisé comme seconde chaîne de CI
+
+Limite identifiée :
+
+La base de données était encore hébergée en conteneur (non managée).
+
+3️⃣ Évolutions majeures réalisées aujourd’hui
+✅ 3.1 Déploiement sur une VM Azure
+
+Création d’une VM Azure (B2ms) en Europe
+
+Accès sécurisé via SSH par clé
+
+Hébergement du projet en mode IaaS
+
+Lancement des services applicatifs via Docker Compose
+
+➡️ Intérêt pédagogique : maîtrise du déploiement cloud bas niveau.
+
+✅ 3.2 Externalisation de la base de données (Cloud PaaS)
+
+Création d’une base PostgreSQL managée Azure
+
+Connexion sécurisée :
+
+SSL/TLS activé automatiquement
+
+Test de connexion via psql
+
+➡️ Passage de :
+
+PostgreSQL conteneurisé → PostgreSQL managé (PaaS)
+
+
+🎯 Point clé du rapport :
+
+Séparation des responsabilités entre application (IaaS) et données (PaaS)
+
+✅ 3.3 Adaptation de l’architecture applicative
+
+Suppression de PostgreSQL Docker
+
+Application connectée à la base cloud
+
+Variables d’environnement adaptées
+
+Application pleinement fonctionnelle avec DB distante
+
+➡️ Architecture désormais cloud-compatible
+
+✅ 3.4 Sécurité & bonnes pratiques
+
+Accès SSH par clé uniquement
+
+Base de données managée (sécurité native Azure)
+
+TLS actif sur PostgreSQL
+
+Jenkins isolé (non exposé publiquement)
+
+✅ 3.5 CI/CD (hors problèmes finaux)
+
+CI GitHub Actions opérationnelle
+
+Jenkins utilisé comme seconde chaîne de CI
+
+Pipeline définie via Jenkinsfile
+
+Jenkins exécuté en conteneur Docker
+
+🎯 Point fort académique :
+
+Redondance des chaînes de CI pour fiabiliser les builds
+
+4️⃣ Problèmes rencontrés & solutions (à valoriser)
+❌ Problème 1 : Conflits de ports (8080)
+
+Cause :
+
+Jenkins et backend tentaient d’utiliser le même port
+
+Solution :
+
+Jenkins déplacé sur 127.0.0.1:8081
+
+Backend conservé sur 8080
+
+➡️ Gestion propre des ports en environnement partagé
+
+❌ Problème 2 : Coûts Azure PostgreSQL trop élevés
+
+Cause :
+
+Configurations par défaut très coûteuses
+
+Régions européennes limitées
+
+Solution :
+
+Choix d’un serveur flexible
+
+Configuration minimale (Dev/Test)
+
+Utilisation raisonnée du crédit étudiant
+
+➡️ Démarche réaliste de cloud cost management
+
+❌ Problème 3 : Perte d’état Jenkins
+
+Cause :
+
+Redémarrage/recréation de conteneur
+
+Volume Jenkins non persistant
+
+Solution :
+
+Acceptation du reset (POC)
+
+Reconfiguration rapide
+
+Explication claire dans le rapport
+
+➡️ Très bon cas d’étude DevOps
+
+5️⃣ Ce qui est PERTINENT À GARDER POUR LE RAPPORT
+🔥 À mettre absolument
+
+Migration progressive vers le cloud
+
+Usage combiné :
+
+VM (IaaS)
+
+PostgreSQL managé (PaaS)
+
+CI GitHub Actions + Jenkins
+
+Sécurité minimale :
+
+Authentification
+
+TLS
+
+Isolation réseau
+
+Architecture cloud-ready mais non encore cloud-native
+
+❌ À ne PAS détailler
+
+Galères de credentials Jenkins
+
+Reset de plugins
+
+Tentatives ratées
+
+Détails trop bas niveau Docker
+
+6️⃣ Phrase clé de conclusion (rapport / oral)
+
+Tu peux conclure par :
+
+Ce projet constitue un POC visant à valider une architecture applicative et DevOps dans un contexte de migration progressive vers le cloud, en combinant des services IaaS et PaaS, tout en respectant les contraintes de sécurité et de coût.
+
+
+==================================================================
+semaine 4 
+1) Décision : repartir sur une base Jenkins saine
+
+Constat : Jenkins était instable (droits/credentials impossibles, sécurité incohérente).
+
+Choix : reset complet de Jenkins pour retrouver un état reproductible.
+
+Actions
+
+Suppression des conteneurs Jenkins et du volume jenkins_home (reset total).
+
+Réinstallation d’un Jenkins LTS propre sur le port 8081.
+
+Création/configuration du compte admin via l’assistant Jenkins.
+✅ Résultat : interface stable + menu Credentials visible.
+
+2) Connexion de Jenkins au dépôt GitHub (SSH)
+Objectif
+
+Permettre à Jenkins de cloner le repo privé/public de façon sécurisée (sans mot de passe).
+
+Actions
+
+Génération d’une clé SSH dédiée Jenkins (jenkins_github_rsa).
+
+Ajout de la clé publique sur GitHub (Settings → SSH keys).
+
+Ajout de la clé privée dans Jenkins Credentials (SSH Username with private key).
+
+✅ Résultat : Jenkins peut lire le dépôt via SSH.
+
+3) Résolution “Host key verification failed”
+Problème
+
+Au premier build : Jenkins refuse GitHub car le host SSH n’est pas approuvé.
+
+Solution
+
+Ajout de github.com dans known_hosts du compte Jenkins :
+
+ssh-keyscan github.com >> /var/jenkins_home/.ssh/known_hosts
+
+✅ Résultat : le clonage Git devient possible.
+
+4) Installation des plugins nécessaires au Jenkinsfile
+Problème
+
+Le Jenkinsfile utilisait agent { docker { ... } } → erreur :
+
+Invalid agent type "docker"
+
+Cause
+
+Plugin Docker Pipeline manquant.
+
+Solution
+
+Installation du plugin Docker Pipeline depuis Jenkins.
+
+✅ Résultat : Jenkins comprend les agents Docker du pipeline.
+
+5) Problème “docker: not found” dans la CI
+Problème
+
+Le pipeline démarre mais échoue dès qu’il exécute Docker :
+
+docker: not found
+
+Cause
+
+Le plugin Docker Pipeline ≠ Docker CLI.
+
+Jenkins est dans un conteneur qui n’a pas docker installé.
+
+Solution
+
+Création d’une image Jenkins custom jenkins-docker avec Docker CLI installé.
+
+Relance de Jenkins en montant le socket Docker :
+
+-v /var/run/docker.sock:/var/run/docker.sock
+
+✅ Résultat : Jenkins peut lancer des containers Docker pour builder.
+
+6) Problème permissions sur docker.sock
+Problème
+
+Docker CLI présent, mais accès refusé :
+
+permission denied while trying to connect to the Docker daemon socket
+
+Cause
+
+L’utilisateur jenkins dans le conteneur n’avait pas les droits sur le socket Docker de l’hôte.
+
+Solution
+
+Ajout du conteneur Jenkins au groupe docker de l’hôte via --group-add <GID> (GID récupéré avec getent group docker).
+
+✅ Résultat : Docker fonctionne depuis Jenkins (Docker Pipeline opérationnel).
+
+7) Problème Trivy (entrypoint) + correction du Jenkinsfile
+Problème
+
+L’étape Trivy a provoqué un message type :
+
+container started but didn’t run expected command (ENTRYPOINT)
+
+Solution
+
+Ajustement du stage Trivy dans le Jenkinsfile pour neutraliser l’entrypoint de l’image (args / entrypoint).
+
+Important : on a identifié le vrai Jenkinsfile utilisé : celui du repo dans /home/azureuser/apps/Projet-Indiv/Jenkinsfile.
+
+✅ Résultat : correction prête côté repo (reste à push proprement demain).
+
+8) Blocage Git “push denied (publickey)” depuis la VM
+Problème
+
+Tu as commité, mais git push depuis la VM échoue :
+
+Permission denied (publickey)
+
+Cause
+
+Jenkins avait son SSH credential, mais l’utilisateur VM (azureuser) n’avait pas sa propre clé SSH GitHub (donc push impossible depuis la VM).
+
+Décision
+
+On reporte la correction Git/push à demain (option : HTTPS+token ou SSH key azureuser).
+
+9) HTTPS sans DNS : mise en place d’un reverse proxy Nginx avec certificat auto-signé
+Contexte
+
+Tu n’as pas de domaine et tu ne veux pas en acheter.
+
+Point technique important
+
+Let’s Encrypt ne délivre pas de certificat pour une IP.
+
+Solution possible : HTTPS auto-signé (acceptable pour un rendu / POC).
+
+Actions
+
+Génération d’un certificat auto-signé (openssl) (CN = IP publique).
+
+Installation de Nginx.
+
+Configuration Nginx en reverse proxy HTTPS vers Jenkins :
+
+HTTPS → Nginx:443 → Jenkins:8081 (localhost)
+
+Ouverture du port 443 dans UFW.
+
+✅ Résultat : Jenkins accessible en HTTPS sur l’IP (avec warning navigateur normal).
+
+🧯 Liste des erreurs rencontrées + comment on les dépasse
+
+Impossible d’ajouter des credentials
+
+Cause : Jenkins “sale” / setup initial mal fait / sécurité incohérente
+
+Fix : reset complet Jenkins (containers + volume) + reconfig propre
+
+Host key verification failed (GitHub SSH)
+
+Cause : known_hosts manquant
+
+Fix : ssh-keyscan github.com >> known_hosts
+
+Invalid agent type "docker"
+
+Cause : plugin Docker Pipeline manquant
+
+Fix : installation plugin
+
+docker: not found
+
+Cause : Docker CLI absent dans conteneur Jenkins
+
+Fix : image Jenkins custom + docker CLI + montage docker.sock
+
+permission denied docker.sock
+
+Cause : droits groupe docker non alignés
+
+Fix : --group-add <gid_docker_host>
+
+Trivy container entrypoint
+
+Cause : comportement image Trivy vs attente Jenkins Docker agent
+
+Fix : ajuster stage (entrypoint/args)
+
+git push denied depuis VM
+
+Cause : clés SSH pas configurées pour azureuser
+
+Fix demain : SSH key azureuser OU HTTPS+token
+
+HTTPS sans DNS
+
+Cause : Let’s Encrypt ne supporte pas IP
+
+Fix : HTTPS auto-signé + Nginx reverse proxy
+
+🎤 Les trucs pertinents à dire à l’oral (Tech Lead angle)
+Points “forts” à valoriser
+
+Reproductibilité : reset Jenkins pour retrouver un état clean et contrôlé.
+
+Sécurité : accès Git via SSH key dédiée (pas de mot de passe).
+
+Sécurité SSH : known_hosts (on ne bypass pas, on valide).
+
+CI industrialisée : pipeline exécuté dans des conteneurs (agents Docker) → environnements de build identiques.
+
+Docker in Docker (propre) : Jenkins conteneur + accès au Docker host via socket (standard en CI).
+
+Least privilege : gestion du groupe docker plutôt que root/sudo partout.
+
+Séparation des responsabilités : Jenkins derrière Nginx en reverse proxy.
+
+HTTPS même sans domaine : auto-signé acceptable en POC + explication claire “en prod on ferait Let’s Encrypt avec DNS”.
+
+Phrases prêtes à sortir
+
+“Jenkins a été réinstallé proprement pour garantir un état reproductible et éviter la dérive de configuration.”
+
+“On utilise des clés SSH dédiées pour l’accès GitHub, ce qui évite toute authentification par mot de passe.”
+
+“Le pipeline s’exécute dans des conteneurs Docker afin d’assurer des builds identiques à chaque exécution.”
+
+“Jenkins étant conteneurisé, on a ajouté le Docker CLI et monté le socket Docker de l’hôte, puis aligné les permissions via le groupe docker.”
+
+“Sans nom de domaine, Let’s Encrypt n’est pas possible : on a mis en place un reverse proxy Nginx en HTTPS avec certificat auto-signé, suffisant pour un POC.”
+
+mdp user jenkins : 04b5b3e191ed4c1484b1deadd46c715d
+
+host pg (fqdn): projet-indiv-pg.postgres.database.azure.com
+
+
+let's encrypte
+faut un dns 

@@ -1,4 +1,16 @@
-**/target/
-**/node_modules/
-**/.DS_Store
+# Java / Maven
+target/
+*.log
+
+# Node / React
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Env
 .env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
